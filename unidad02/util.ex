@@ -58,41 +58,41 @@ defmodule Util do
     IO.puts(:standard_error, m)
   end
 
-#  def ingresar(m, :entero) do
-#    try do
-#      m
-#      |> ingresar(:input)
-#      |> String.to_integer()
-#    rescue
-#      ArgumentError ->
-#        "Error, se spera que ingrese un numero entero\n"
-#        |> mostrar_error()
-#
-#        m
-#        |> ingresar(:entero)
-#    end
-#  end
-#
-#  def ingresar(m, :real) do
-#    try do
-#      m
-#      |> ingresar(:input)
-#      |> String.to_float()
-#    rescue
-#      ArgumentError ->
-#        "Error, se spera que ingrese un numero real\n"
-#        |> mostrar_error()
-#
-#        m
-#        |> ingresar(:entero)
-#    end
-#  end
+  def ingresar(m, :entero) do
+    try do
+      m
+      |> ingresar(:input)
+      |> String.to_integer()
+    rescue
+      ArgumentError ->
+        "Error, se spera que ingrese un numero entero\n"
+        |> mostrar_error()
+
+        m
+        |> ingresar(:entero)
+    end
+  end
+
+  def ingresar(m, :real) do
+    try do
+      m
+      |> ingresar(:input)
+      |> String.to_float()
+    rescue
+      ArgumentError ->
+        "Error, se spera que ingrese un numero real\n"
+        |> mostrar_error()
+
+        m
+        |> ingresar(:entero)
+    end
+  end
 
 
   def ingresar(mensaje, func, tipo_dato) do
     try do
       mensaje
-      |> ingresar(:input)
+      |> ingresar(:output)
       |> func.()
     rescue
       ArgumentError ->
@@ -109,6 +109,21 @@ defmodule Util do
   def ingresar(mensaje, :real), do: ingresar(mensaje, &String.to_float/1, :real)
 
 
+########################################################################
+# Clase Aug 28
 
+def mostrar_mensaje(cedula, fecha_promocion) do
+  if rem(cedula, fecha_promocion) == 0 do
+    "Recibe_descuento"
+  else
+    "No recibe descuento"
+    end
+  end
+
+
+def generar_mensaje(cedula, fecha_promocion)
+when rem(cedula, fecha_promocion) == 0, do: "Recibe el descuento";
+
+def generar_mensaje(_,_), do: "No recibe descuento"
 
 end
