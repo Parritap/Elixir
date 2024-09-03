@@ -126,4 +126,14 @@ when rem(cedula, fecha_promocion) == 0, do: "Recibe el descuento";
 
 def generar_mensaje(_,_), do: "No recibe descuento"
 
+
+  #Método funcional
+  def calcular_permutaciones_circulares(n) do
+    (n - 1) |> calcular_factorial
+  end
+
+  #Usando sobrecarga.
+  def calcular_factorial(0), do: 1
+  def calcular_factorial(n), do: n * calcular_factorial(n - 1)
 end
+
