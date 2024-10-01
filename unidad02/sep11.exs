@@ -1,5 +1,5 @@
 defmodule SimulacionParImpar do
-  @valores_prueba [10_000, 100_000, 1_000_000, 10_000_000, 100_000_000]
+  @valores_prueba [1_000_000_000]
   @repetaciones 5
 
   # def main do

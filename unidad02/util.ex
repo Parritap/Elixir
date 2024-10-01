@@ -136,4 +136,3 @@ def generar_mensaje(_,_), do: "No recibe descuento"
   def calcular_factorial(0), do: 1
   def calcular_factorial(n), do: n * calcular_factorial(n - 1)
 end
-
