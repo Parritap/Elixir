@@ -67,8 +67,9 @@ defmodule Cliente do
 
   def filtrar_datos_interes(datos) do
     datos
-    # |> Enum.filter(&(&1.edad < 21)) Forma anonima reducida
-    |> Enum.filter(fn cliente -> cliente.edad < 21 end)
+    |> Enum.filter(&(&1.edad < 21))
+    #|> Enum.filter(fn cliente -> cliente.edad < 21 end)
+
   end
 
   def generar_mensaje(cliente) do
@@ -89,12 +90,13 @@ defmodule Cliente do
       cadena
       |> String.split(",")
       |> Enum.map(&String.trim/1)
-      # Cuando colocamos el ampersant al principio, en vez de ejecutar la funcion,
-      # lo que pasa es que estamos enviando la direccion de la funcion para que map sepa que funcion ejecutar.
 
-    edad = edad |> String
+    # Cambiamos a String.to_integer/1 para convertir edad en un entero
+    edad = edad |> String.to_integer()
     altura = altura |> String.to_float()
 
     Cliente.crear(nombre, edad, altura)
   end
+
+
 end
