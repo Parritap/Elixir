@@ -11,3 +11,5 @@ defmodule DatosLogicos do
     |> Util.mostrar_mensaje()
   end
 end
+
+DatosLogicos.main()

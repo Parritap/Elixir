@@ -58,6 +58,9 @@ defmodule Util do
     IO.puts(:standard_error, m)
   end
 
+  @doc """
+  Función que permite ingresar un número entero.
+  """
   def ingresar(m, :entero) do
     try do
       m
@@ -73,6 +76,10 @@ defmodule Util do
     end
   end
 
+
+  @doc """
+  Función que permite ingresar un número real.
+  """
   def ingresar(m, :real) do
     try do
       m
@@ -88,7 +95,11 @@ defmodule Util do
     end
   end
 
-
+  @doc """
+  Función de orden superior que permite ingresar un número.
+  El parametro func es una función que se ejecuta en el bloque y
+  su proposito es convertir el valor ingresado a un tipo de dato especifico.
+  """
   def ingresar(mensaje, func, tipo_dato) do
     try do
       mensaje
