@@ -1,19 +1,26 @@
 defmodule Sequential do
-
-  @vars
-
   def main do
-    System.argv() #Gets args
-    |> Enum.at(0) #Gets the first arg which is the file path to text.
-    |> File.read!()
-    |> String.split("\n")
-    |> Enum.each(&IO.inspect(&1))
+    num_vars =
+    System.argv()
+    # Gets the first arg which is the file path to text.
+    |> Enum.at(0)
+    |> extract_number_of_vars()
+
+    num_test_cases = 
+
   end
 
   def extract_number_of_vars(file_path) do
-    File.read!(file_path)
+    print_first_non_c_line(file_path)
+    |> String.split(" ")
+    |> Enum.at(2)
+  end
+
+  def print_first_non_c_line(file_path) do
+    file_path
+    |> File.read!()
     |> String.split("\n")
-    |> Enum.each(&IO.inspect(&1))
+    |> Enum.find(&(!String.starts_with?(&1, "c")))
   end
 end
 
