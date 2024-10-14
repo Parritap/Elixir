@@ -47,13 +47,18 @@ defmodule Sequential do
         false -> {:halt, [false | acc]}
       end
     end)
-    |> Enum.reverse()
+    # Returns the last element to be appended to the list, i.e. the halt value.
+    |> Enum.at(0)
   end
 
   # FOCUS
   @spec eval_single_test!(pos_integer(), [String.t()], pos_integer()) :: boolean()
   def eval_single_test!(num, test, max_num_bits) do
-    binary_str = Binary.int_to_bool_list(num, max_num_bits)
+    bool_list = Binary.int_to_bool_list(num, max_num_bits)
+    |> Enum.reduce_while([], fn d, acc ->
+      directive =
+      case
+    end)
   end
 
   @spec extract_tests(String.t(), non_neg_integer(), non_neg_integer()) :: [String.t()]
@@ -124,6 +129,59 @@ defmodule Binary do
   end
 end
 
+defmodule Directive do
+  @moduledoc """
+  This is nothing more than my own data structure to store a single directive of the SAT problem
+  Given a test case like this: 4 -18 19 0, a directive would be [4] or [-18], where the sign and
+  the number is store in a tuple like this: {true, 4} for "4" and {false, 18} for "-18".
+  """
+
+  @type pair :: {boolean(), pos_integer()}
+
+
+  @spec create_pair(boolean(), pos_integer()) :: pair
+  def create_pair(bool, num) when is_boolean(bool) and is_integer(num) and num > 0 do
+    {bool, num}
+  end
+
+  @spec create_pair(String.t()) :: pair
+  def create_pair(str) do
+    num = str |> String.to_integer()
+    {num>0, abs(num)}
+  end
+
+  @spec get_boolean(pair) :: boolean()
+  def get_boolean({bool, _num}), do: bool
+
+  @spec get_number(pair) :: pos_integer()
+  def get_number({_bool, num}), do: num
+
+  @spec increment_number(pair) :: pair
+  def increment_number({bool, num}), do: {bool, num + 1}
+
+  @spec flip_boolean(pair) :: pair
+  def flip_boolean({bool, num}), do: {!bool, num}
+
+  @spec process_pair(pair) :: String.t()
+  def process_pair({true, num}) when num > 10 do
+    "High true value: #{num}"
+  end
+
+  def process_pair({false, num}) when num <= 10 do
+    "Low false value: #{num}"
+  end
+
+  def process_pair(pair) do
+    "Other case: #{inspect(pair)}"
+  end
+
+  @spec pair_to_list(pair) :: [boolean() | pos_integer()]
+  def pair_to_list(pair), do: Tuple.to_list(pair)
+end
+
 # Sequential.main()
 Binary.int_to_bool_list(3, 7)
 |> IO.inspect()
+
+var = Directive.create_pair(true, 5)
+IO.inspect(var)
