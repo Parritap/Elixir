@@ -18,9 +18,9 @@ defmodule Sequential do
     IO.puts(num_tests)
 
     IO.puts("EXTRACTING TESTS---------------------------------")
-    tests = extract_tests(file_path, num_vars, num_tests)
-    IO.inspect(tests)
-    IO.puts(length(tests))
+    tests_lists = extract_tests(file_path, num_vars, num_tests)
+    IO.inspect(tests_lists)
+    IO.puts(length(tests_lists))
     IO.puts("TEST EXTRACTED---------------------------------")
 
     # Generates a list of num_vars booleans where the variables will be stored.
@@ -29,17 +29,32 @@ defmodule Sequential do
 
     # Max number of possible combinations
     max = :math.pow(2, num_vars) |> round()
+    max_num_bits = max |> Binary.integer_to_binary() |> String.length()
 
     # Evaluates de test for every possible combination
     # The combination of values true and false will be given by the
     # binary representation of the number.
-    # for num <- 0..max,
-    #    do: eval_tests!(num, [["1", "0"], ["1", "0"]])
+    for num <- 0..max,
+        do: eval_tests!(num, tests_lists, max_num_bits)
   end
 
-  # @spec eval_tests!(integer(), [String.t()]) :: [boolean()]
-  # def eval_tests!(num, lists_tests) do
-  # end
+  @spec eval_tests!(integer(), [String.t()], pos_integer()) :: [boolean()]
+  def eval_tests!(num, lists_tests, max_num_bits) do
+    lists_tests
+    |> Enum.reduce_while([], fn test, acc ->
+      case eval_single_test!(num, test, max_num_bits) do
+        true -> {:cont, [true | acc]}
+        false -> {:halt, [false | acc]}
+      end
+    end)
+    |> Enum.reverse()
+  end
+
+  # FOCUS
+  @spec eval_single_test!(pos_integer(), [String.t()], pos_integer()) :: boolean()
+  def eval_single_test!(num, test, max_num_bits) do
+    binary_str = Binary.int_to_bool_list(num, max_num_bits)
+  end
 
   @spec extract_tests(String.t(), non_neg_integer(), non_neg_integer()) :: [String.t()]
   def extract_tests(file_path, num_vars, num_tests) do
@@ -47,8 +62,10 @@ defmodule Sequential do
     |> File.read!()
     |> String.split("\n")
     |> Enum.filter(&(!String.starts_with?(&1, "c")))
-    |> Enum.drop(1) # drops the first line, the one that says "p cnf ..."
-    |> Enum.take_while(&(!String.contains?(&1, "%")))  # Stop at the line containing "%"
+    # drops the first line, the one that says "p cnf ..."
+    |> Enum.drop(1)
+    # Stop at the line containing "%"
+    |> Enum.take_while(&(!String.contains?(&1, "%")))
     |> Enum.map(&String.split(&1, @white_regex))
   end
 
@@ -79,11 +96,34 @@ defmodule Binary do
     integer_to_binary(div(n, 2), Integer.to_string(rem(n, 2)) <> acc)
   end
 
-  def add_one(number) do
-    number
-    |> String.to_integer(2)
-    |> Kernel.+(1)
+  @doc """
+  Converts a positive integer to binary and then maps
+  every bit to a boolean, storing said booleans into a list
+  """
+  @spec int_to_bool_list(pos_integer()) :: list(boolean())
+  def int_to_bool_list(num), do: num |> integer_to_binary() |> binary_str_to_bool_list()
+
+  @spec int_to_bool_list(pos_integer(), non_neg_integer()) :: list(boolean())
+  def int_to_bool_list(num, num_of_bits) do
+    list = num |> int_to_bool_list()
+    padding = for _ <- length(list)..(num_of_bits - 1), do: false
+    padding ++ list
+  end
+
+  @spec binary_str_to_bool_list(String.t()) :: list(boolean())
+  def binary_str_to_bool_list(str) do
+    str
+    |> String.split("")
+    |> Enum.slice(1..-2)
+    |> Enum.map(fn e ->
+      case e do
+        "1" -> true
+        "0" -> false
+      end
+    end)
   end
 end
 
-Sequential.main()
+# Sequential.main()
+Binary.int_to_bool_list(3, 7)
+|> IO.inspect()
