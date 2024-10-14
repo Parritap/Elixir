@@ -40,9 +40,12 @@ defmodule Sequential do
 
   @spec eval_tests!(integer(), [String.t()], pos_integer()) :: [boolean()]
   def eval_tests!(num, lists_tests, max_num_bits) do
+    # representation of num based on list of bools
+    bools_list = Binary.int_to_bool_list(num, max_num_bits)
+
     lists_tests
     |> Enum.reduce_while([], fn test, acc ->
-      case eval_single_test!(num, test, max_num_bits) do
+      case eval_single_test!(bools_list, test, max_num_bits) do
         true -> {:cont, [true | acc]}
         false -> {:halt, [false | acc]}
       end
@@ -52,13 +55,17 @@ defmodule Sequential do
   end
 
   # FOCUS
-  @spec eval_single_test!(pos_integer(), [String.t()], pos_integer()) :: boolean()
-  def eval_single_test!(num, test, max_num_bits) do
-    bool_list = Binary.int_to_bool_list(num, max_num_bits)
-    |> Enum.reduce_while([], fn d, acc ->
-      directive =
-      case
-    end)
+  @spec eval_single_test!(list(boolean()), [String.t()], pos_integer()) :: boolean()
+  def eval_single_test!(bools_list, test, max_num_bits) do
+    test |>Enum.map(fn e -> Directive.create_pair(e) end) # Converts the list of strings to a list of pairs (directives)
+    |> Enum.reduce_while(
+      [], fn directive, acc ->
+        aux = Enum.at(bools_list, Directive.get_number(directive) - 1) == Directive.get_boolean(directive)
+        case aux do
+          true -> {:cont, [true | acc]}
+          false -> {:halt, [false | acc]}
+        end
+      end)
   end
 
   @spec extract_tests(String.t(), non_neg_integer(), non_neg_integer()) :: [String.t()]
@@ -138,7 +145,6 @@ defmodule Directive do
 
   @type pair :: {boolean(), pos_integer()}
 
-
   @spec create_pair(boolean(), pos_integer()) :: pair
   def create_pair(bool, num) when is_boolean(bool) and is_integer(num) and num > 0 do
     {bool, num}
@@ -147,7 +153,7 @@ defmodule Directive do
   @spec create_pair(String.t()) :: pair
   def create_pair(str) do
     num = str |> String.to_integer()
-    {num>0, abs(num)}
+    {num > 0, abs(num)}
   end
 
   @spec get_boolean(pair) :: boolean()
