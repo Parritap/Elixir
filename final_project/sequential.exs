@@ -8,20 +8,16 @@ defmodule Sequential do
     num_vars =
       get_first_line(file_path, &(&1 |> String.split(@white_regex) |> Enum.at(2)))
       |> String.to_integer()
+    IO.puts("NUM_VARS: #{num_vars}")
 
-    IO.puts(num_vars)
-
-    num_tests =
-      get_first_line(file_path, &(&1 |> String.split(@white_regex) |> Enum.at(3)))
-      |> String.to_integer()
-
-    IO.puts(num_tests)
 
     IO.puts("EXTRACTING TESTS---------------------------------")
-    tests_lists = extract_tests(file_path, num_vars, num_tests)
-    IO.inspect(tests_lists)
+    tests_lists = extract_tests(file_path)
+    for test <- tests_lists do
+      IO.inspect(test)
+    end
     IO.puts(length(tests_lists))
-    IO.puts("TEST EXTRACTED---------------------------------")
+    IO.puts("TESTS EXTRACTED---------------------------------")
 
     # Generates a list of num_vars booleans where the variables will be stored.
     List.duplicate(false, num_vars)
@@ -30,22 +26,47 @@ defmodule Sequential do
     # Max number of possible combinations
     max = :math.pow(2, num_vars) |> round()
     max_num_bits = max |> Binary.integer_to_binary() |> String.length()
+    IO.puts("MAX: #{max}")
 
     # Evaluates de test for every possible combination
     # The combination of values true and false will be given by the
     # binary representation of the number.
-    for num <- 0..max,
-        do: eval_tests!(num, tests_lists, max_num_bits)
+    flag = false
+
+    results =
+      for num <- 0..(max-1) do
+        result = eval_tests!(num, tests_lists, max_num_bits)
+
+        if result do
+          IO.puts("SATISFIABLE with #{num} in binary form: #{Binary.integer_to_binary(num)}")
+        end
+
+        result
+      end
+
+    # A for loop returns a list. If any of the results is truthty, then the flag will be true.
+    flag = Enum.any?(results, & &1)
+
+    # Final output
+    if flag do
+      IO.puts("SATISFIABLE")
+    else
+      IO.puts("UNSATISFIABLE")
+    end
   end
 
-  @spec eval_tests!(integer(), [String.t()], pos_integer()) :: [boolean()]
+  @spec eval_tests!(integer(), [String.t()], pos_integer()) :: boolean()
   def eval_tests!(num, lists_tests, max_num_bits) do
+
     # representation of num based on list of bools
     bools_list = Binary.int_to_bool_list(num, max_num_bits)
+    #IO.puts("NUMBER IS #{num}--------------------------------------")
+    #IO.puts("BOOLS_LIST: #{inspect(bools_list)}")
+
 
     lists_tests
     |> Enum.reduce_while([], fn test, acc ->
-      case eval_single_test!(bools_list, test, max_num_bits) do
+      case eval_single_test!(bools_list, test) do
         true -> {:cont, [true | acc]}
         false -> {:halt, [false | acc]}
       end
@@ -55,30 +76,39 @@ defmodule Sequential do
   end
 
   # FOCUS
-  @spec eval_single_test!(list(boolean()), [String.t()], pos_integer()) :: boolean()
-  def eval_single_test!(bools_list, test, max_num_bits) do
-    test |>Enum.map(fn e -> Directive.create_pair(e) end) # Converts the list of strings to a list of pairs (directives)
+  @spec eval_single_test!(list(boolean()), [String.t()]) :: boolean()
+  def eval_single_test!(bools_list, test) do
+    # Converts the list of strings to a list of pairs (directives)
+
+    #IO.puts("TEST: #{inspect(test)}")
+
+    test
+    |> Enum.map(&Directive.create_pair/1)
     |> Enum.reduce_while(
-      [], fn directive, acc ->
-        aux = Enum.at(bools_list, Directive.get_number(directive) - 1) == Directive.get_boolean(directive)
+      [],
+      fn directive, acc ->
+        aux =
+          Enum.at(bools_list, Directive.get_number(directive) - 1) == Directive.get_boolean(directive)
+
         case aux do
-          true -> {:cont, [true | acc]}
-          false -> {:halt, [false | acc]}
+          false -> {:cont, [false | acc]}
+          # We no longer need to evaluate the rest of the directives if any of them return true.
+          true -> {:halt, [true | acc]}
         end
-      end)
+      end
+    )
+    |> Enum.at(0)
   end
 
-  @spec extract_tests(String.t(), non_neg_integer(), non_neg_integer()) :: [String.t()]
-  def extract_tests(file_path, num_vars, num_tests) do
+  @spec extract_tests(String.t()) :: [String.t()]
+  def extract_tests(file_path) do
     file_path
     |> File.read!()
     |> String.split("\n")
     |> Enum.filter(&(!String.starts_with?(&1, "c")))
-    # drops the first line, the one that says "p cnf ..."
     |> Enum.drop(1)
-    # Stop at the line containing "%"
     |> Enum.take_while(&(!String.contains?(&1, "%")))
-    |> Enum.map(&String.split(&1, @white_regex))
+    |> Enum.map(&String.split(&1, @white_regex) |> Enum.drop(-1))
   end
 
   @spec get_first_line(String.t(), (String.t() -> any())) :: any()
@@ -90,11 +120,10 @@ defmodule Sequential do
     |> function.()
   end
 
-  @spec create_bools_list(non_neg_integer(), boolean()) :: [boolean()]
-  def create_bools_list(n, boolean \\ true) when n > 0 do
-    List.duplicate(boolean, n)
-    List.duplicate(boolean, n)
-  end
+  # @spec create_bools_list(non_neg_integer(), boolean()) :: [boolean()]
+  # def create_bools_list(n, boolean \\ true) when n > 0 do
+  #  List.duplicate(boolean, n)
+  # end
 end
 
 defmodule Binary do
@@ -125,13 +154,10 @@ defmodule Binary do
   @spec binary_str_to_bool_list(String.t()) :: list(boolean())
   def binary_str_to_bool_list(str) do
     str
-    |> String.split("")
-    |> Enum.slice(1..-2)
-    |> Enum.map(fn e ->
-      case e do
-        "1" -> true
-        "0" -> false
-      end
+    |> String.graphemes()
+    |> Enum.map(fn
+      "1" -> true
+      "0" -> false
     end)
   end
 end
@@ -185,9 +211,4 @@ defmodule Directive do
   def pair_to_list(pair), do: Tuple.to_list(pair)
 end
 
-# Sequential.main()
-Binary.int_to_bool_list(3, 7)
-|> IO.inspect()
-
-var = Directive.create_pair(true, 5)
-IO.inspect(var)
+Sequential.main()
