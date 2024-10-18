@@ -22,8 +22,20 @@ defmodule Sequential do
   %
   ```
   """
+  """
+  Solutions to uf20-01.cnf
+    0 1 1 1 0 0 0 1 1 1 1 0 0 1 1 0 1 1 1 1 = 466543
+    1 0 0 0 0 1 0 0 0 0 0 0 1 1 1 0 1 0 0 1 = 540905
+    1 0 0 0 0 1 0 0 1 0 0 0 0 1 1 0 1 0 0 1 = 542825
+    1 0 0 0 0 1 0 0 1 0 0 0 1 1 1 0 1 0 0 1 = 542953
+    1 0 0 1 0 0 0 0 0 1 0 0 1 1 1 0 1 0 0 1 = 591081
+    1 0 0 1 0 0 0 1 0 1 0 0 1 1 1 0 1 0 0 1 = 595177
+    1 0 0 1 0 1 0 0 0 0 0 0 1 1 1 0 1 0 0 1 = 606441
+    1 0 0 1 0 1 0 0 0 1 0 0 1 1 1 0 1 0 0 1 = 607465
+  """
 
   def main do
+    #IMPORTANTE -> DEBE ESPECIFICARSE EL ARCHIVO .CNF COMO PRIMER ARGUMENTO DEL PROGRAMA POR LA LINEA DE COMANDOS
     file_path = System.argv() |> Enum.at(0)
 
     num_vars =
@@ -42,14 +54,10 @@ defmodule Sequential do
     IO.puts(length(tests_lists))
     IO.puts("TESTS EXTRACTED---------------------------------")
 
-    # Generates a list of num_vars booleans where the variables will be stored.
-    List.duplicate(false, num_vars)
-    |> IO.inspect()
-
     # Max number of possible combinations
     max = :math.pow(2, num_vars) |> round()
-    max_num_bits = max |> Binary.integer_to_binary() |> String.length()
-    IO.puts("MAX: #{max}")
+    max_num_bits = (max - 1) |> Binary.integer_to_binary() |> String.length()
+    IO.puts("MAX: #{max} and MAX_NUM_BITS: #{max_num_bits}")
 
     # Evaluates de test for every possible combination
     # The combination of values true and false will be given by the
@@ -91,10 +99,14 @@ defmodule Sequential do
   """
   @spec eval_tests!(integer(), [String.t()], pos_integer()) :: boolean()
   def eval_tests!(num, lists_tests, max_num_bits) do
-    # representation of num based on list of bools
     bools_list = Binary.int_to_bool_list(num, max_num_bits)
+    # representation of num based on list of bools
     # IO.puts("NUMBER IS #{num}--------------------------------------")
     # IO.puts("BOOLS_LIST: #{inspect(bools_list)}")
+
+    if length(bools_list) != 20,
+      do: raise("Length of bools_list is not 20, current size is #{length(bools_list)}
+      with number #{num}")
 
     lists_tests
     |> Enum.reduce_while([], fn test, acc ->
@@ -230,8 +242,14 @@ defmodule Binary do
   @spec int_to_bool_list(pos_integer(), non_neg_integer()) :: list(boolean())
   def int_to_bool_list(num, num_of_bits) do
     list = num |> int_to_bool_list()
-    padding = for _ <- length(list)..(num_of_bits - 1), do: false
-    padding ++ list
+
+    result =
+      case length(list) < num_of_bits do
+        false -> list
+        true -> for(_ <- length(list)..(num_of_bits - 1), do: false) ++ list
+      end
+
+    result
   end
 
   @spec binary_str_to_bool_list(String.t()) :: list(boolean())
@@ -260,11 +278,6 @@ defmodule Directive do
 
   @type pair :: {boolean(), pos_integer()}
 
-  @spec create_pair(boolean(), pos_integer()) :: pair
-  def create_pair(bool, num) when is_boolean(bool) and is_integer(num) and num > 0 do
-    {bool, num}
-  end
-
   @spec create_pair(String.t()) :: pair
   def create_pair(str) do
     num = str |> String.to_integer()
@@ -276,28 +289,6 @@ defmodule Directive do
 
   @spec get_number(pair) :: pos_integer()
   def get_number({_bool, num}), do: num
-
-  @spec increment_number(pair) :: pair
-  def increment_number({bool, num}), do: {bool, num + 1}
-
-  @spec flip_boolean(pair) :: pair
-  def flip_boolean({bool, num}), do: {!bool, num}
-
-  @spec process_pair(pair) :: String.t()
-  def process_pair({true, num}) when num > 10 do
-    "High true value: #{num}"
-  end
-
-  def process_pair({false, num}) when num <= 10 do
-    "Low false value: #{num}"
-  end
-
-  def process_pair(pair) do
-    "Other case: #{inspect(pair)}"
-  end
-
-  @spec pair_to_list(pair) :: [boolean() | pos_integer()]
-  def pair_to_list(pair), do: Tuple.to_list(pair)
 end
 
 Sequential.main()
