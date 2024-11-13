@@ -22,20 +22,20 @@ defmodule Sequential do
   %
   ```
   """
-  """
-  Solutions to uf20-01.cnf
-    0 1 1 1 0 0 0 1 1 1 1 0 0 1 1 0 1 1 1 1 = 466543
-    1 0 0 0 0 1 0 0 0 0 0 0 1 1 1 0 1 0 0 1 = 540905
-    1 0 0 0 0 1 0 0 1 0 0 0 0 1 1 0 1 0 0 1 = 542825
-    1 0 0 0 0 1 0 0 1 0 0 0 1 1 1 0 1 0 0 1 = 542953
-    1 0 0 1 0 0 0 0 0 1 0 0 1 1 1 0 1 0 0 1 = 591081
-    1 0 0 1 0 0 0 1 0 1 0 0 1 1 1 0 1 0 0 1 = 595177
-    1 0 0 1 0 1 0 0 0 0 0 0 1 1 1 0 1 0 0 1 = 606441
-    1 0 0 1 0 1 0 0 0 1 0 0 1 1 1 0 1 0 0 1 = 607465
-  """
+
+  # Solutions to uf20-01.cnf
+  #   0 1 1 1 0 0 0 1 1 1 1 0 0 1 1 0 1 1 1 1 = 466543
+  #   1 0 0 0 0 1 0 0 0 0 0 0 1 1 1 0 1 0 0 1 = 540905
+  #   1 0 0 0 0 1 0 0 1 0 0 0 0 1 1 0 1 0 0 1 = 542825
+  #   1 0 0 0 0 1 0 0 1 0 0 0 1 1 1 0 1 0 0 1 = 542953
+  #   1 0 0 1 0 0 0 0 0 1 0 0 1 1 1 0 1 0 0 1 = 591081
+  #   1 0 0 1 0 0 0 1 0 1 0 0 1 1 1 0 1 0 0 1 = 595177
+  #   1 0 0 1 0 1 0 0 0 0 0 0 1 1 1 0 1 0 0 1 = 606441
+  #   1 0 0 1 0 1 0 0 0 1 0 0 1 1 1 0 1 0 0 1 = 607465
+  #
 
   def main do
-    #IMPORTANTE -> DEBE ESPECIFICARSE EL ARCHIVO .CNF COMO PRIMER ARGUMENTO DEL PROGRAMA POR LA LINEA DE COMANDOS
+    # IMPORTANTE -> DEBE ESPECIFICARSE EL ARCHIVO .CNF COMO PRIMER ARGUMENTO DEL PROGRAMA POR LA LINEA DE COMANDOS
     file_path = System.argv() |> Enum.at(0)
 
     num_vars =
@@ -59,30 +59,51 @@ defmodule Sequential do
     max_num_bits = (max - 1) |> Binary.integer_to_binary() |> String.length()
     IO.puts("MAX: #{max} and MAX_NUM_BITS: #{max_num_bits}")
 
-    # Evaluates de test for every possible combination
-    # The combination of values true and false will be given by the
-    # binary representation of the number.
-    flag = false
-
     results =
       for num <- 0..(max - 1) do
         result = eval_tests!(num, tests_lists, max_num_bits)
 
         if result do
-          IO.puts("SATISFIABLE with #{num} in binary form: #{Binary.integer_to_binary(num)}")
+          variables_solution =
+            Integer.to_string(num, 2)
+            |> check_variales(max_num_bits)
+
+          IO.puts("SATISFIABLE with #{num} in binary form: #{variables_solution}")
         end
 
         result
       end
 
+    # Flag variable evaluates de test for every possible combination
+    # The combination of values true and false will be given by the
+    # binary representation of the number.
+
     # A for loop returns a list. If any of the results is truthty, then the flag will be true.
     flag = Enum.any?(results, & &1)
 
     # Final output
-    if flag do
-      IO.puts("SATISFIABLE")
+    if !flag do
+      IO.puts("PROBLEM UNSATISFIABLE")
+    end
+  end
+
+  @doc """
+  Adds zeros to the start of the string to adjust properly binary string into a specific number of variables.
+
+  ## Parameters
+    - binary_str_number: String represents the number of solution variables in binary format
+    - max_num_bits: Integer describes number of digits that the solution binary must have
+
+  ## Returns
+    - binary_str_number: Binary string number with appropriate amount digits according max_num_bits
+  """
+
+  @spec check_variales(String.t(), pos_integer()) :: String.t()
+  def check_variales(binary_str_number, max_num_bits) do
+    if String.length(binary_str_number) < max_num_bits do
+      check_variales("0" <> binary_str_number, max_num_bits)
     else
-      IO.puts("UNSATISFIABLE")
+      binary_str_number
     end
   end
 
