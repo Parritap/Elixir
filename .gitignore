@@ -1,1 +1,5 @@
 *.DS_STORE
+*.beam
+*.java
+*.html
+*.csv

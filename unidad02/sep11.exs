@@ -1,30 +1,28 @@
 defmodule SimulacionParImpar do
-  @valores_prueba [1_000_000_000]
-  @repetaciones 5
+  @valores_prueba [10_000, 100_000, 1_000_000, 10_000_000, 100_000_000]
+  @repeticiones 5
 
   # def main do
-  #   mensaje_simulaciones =
-  #     hacer_simulaciones(@valores_prueba, @repetaciones)
-  #     |> convertir_resultados_simulaciones_mensaje()
-  #     |> agregar_titulos()
+  #  mensaje_simulaciones =
+  #    hacer_simulaciones(@valores_prueba, @repeticiones)
+  #    |> convertir_resultados_simulaciones_mensaje()
+  #    |> agregar_titulos()
 
-  #   mensaje_simulaciones
-  #   |> escribir_archivo("par_impar.csv")
+  #  mensaje_simulaciones
+  #  |> escribir_archivo("par_impar.csv")
 
-  #   mensaje_simulaciones
-  #   |> Util.mostrat_mensajes()
+  #  mensaje_simulaciones
+  #  |> Util.mostrar_mensaje()
   # end
 
-
-  #Funcion main 2 usando el codigo del profe
+  # Funcion main 2 usando el codigo del profe
   def main do
     hacer_simulaciones(@valores_prueba, @repeticiones)
     |> convertir_resultados_simulaciones_mensaje()
     |> agregar_titulos()
     |> Benchmark.generar_grafica_html()
     |> escribir_archivo("index.html")
-    end
-
+  end
 
   # VERSION 1
   defp hacer_simulaciones(valores, repeticiones) do
@@ -33,11 +31,12 @@ defmodule SimulacionParImpar do
     end)
   end
 
-  # TODO Terminar
-  defp hacer_simulaciones2(valores, repeticiones) do
-  end
-
   # Nota, una tupla es inmutable.
+  @doc """
+  Ejecuta la simulación de los algoritmos con un valor dado.
+  Este método se encarga de ejecutar los algoritmos de par e impar existentes
+  en el módulo ParImpar, con un valor dado y un número de repeticiones.
+  """
   defp ejecutar_simulacion(valor, repeticiones) do
     algoritmos = [
       {ParImpar, :isEven1, [valor]},
@@ -61,7 +60,7 @@ defmodule SimulacionParImpar do
       end)
       |> Enum.sum()
 
-    (suma / repeticiones)
+    suma / repeticiones
   end
 
   defp convertir_resultados_simulaciones_mensaje(resultado_simulaciones) do
@@ -72,22 +71,20 @@ defmodule SimulacionParImpar do
 
   defp generar_mensaje(simulacion) do
     {valor, [promedio1, promedio2, promedio3, promedio4]} = simulacion
-    "#{valor}, #{promedio1}, #{promedio2}, #{promedio3}, #{promedio4}"
+    "\t['#{valor}', #{promedio1}, #{promedio2}, #{promedio3}, #{promedio4}],
+  "
   end
 
   defp agregar_titulos(mensaje_simulacion) do
     agregar_titulos = fn contenido ->
-      "Prueba, Algoritmo 1, Algoritmo 2, Algoritmo 3, Algoritmo 4\n" <> contenido
+      "['Prueba', 'Algoritmo 1', 'Algoritmo 2', 'Algoritmo 3', 'Algoritmo 4'],\n" <> contenido
     end
 
     mensaje_simulacion
     |> agregar_titulos.()
   end
 
-
-
-
-  defp  escribir_archivo(contenido, nombre) do
+  defp escribir_archivo(contenido, nombre) do
     File.write(nombre, contenido)
   end
 end

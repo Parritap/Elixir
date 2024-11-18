@@ -20,7 +20,7 @@ defmodule Benchmark do
         tiempo_final - tiempo_inicial,
         :native,
         :microsecond
-       )
+      )
 
     duracion
   end
@@ -30,5 +30,50 @@ defmodule Benchmark do
 
     "Tiempos: algoritmo 1 #{t1}, algoritmo 2: #{t2}
     El algoritmo 1 es #{speedup} veces más rapido que el algoritmo 2"
+  end
+
+  def generar_grafica_html(datos) do
+    html_base =
+      """
+      <html>
+      <head>
+      <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+      <script type="text/javascript">
+      google.charts.load('current'
+
+      , {'packages':['bar']});
+
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+      var data = google.visualization.arrayToDataTable([
+      <TITULOS y DATOS>
+      ]);
+      var options = {
+      chart: {
+      title: 'Comparación de algoritmos'
+      ,
+
+      subtitle: 'Pruebas vs Tiempo de ejecución'
+      ,
+
+      }
+      };
+      var chart = new google.charts.Bar(document.getElementById('columnchart_material'));
+      chart.draw(data, google.charts.Bar.convertOptions(options));
+      }
+      </script>
+
+
+      </head>
+      <body>
+      <div id="columnchart_material" style="width: 800px; height: 500px;"></div>
+      </body>
+      </html>
+      """
+
+    html_final = String.replace(html_base, "<TITULOS y DATOS>", datos)
+
+    html_final
   end
 end
