@@ -1,0 +1,10 @@
+
+
+elixir --sname nodoservidor1@localhost --cookie my_cookie nodo-servidor1.exs
+elixir --sname nodoservidor2@localhost --cookie my_cookie nodo-servidor2.exs
+
+elixir --sname nodocliente@localhost --cookie my_cookie nodo-cliente.exs 
+
+siempre ejcutar primero los dos sevidores 
+
+abrir 3 terminales
